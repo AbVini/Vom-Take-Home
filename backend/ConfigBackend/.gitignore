@@ -1,0 +1,52 @@
+# Build e dependências
+bin/
+obj/
+
+# Diretórios de pacotes NuGet
+packages/
+*.nupkg
+project.lock.json
+project.fragment.lock.json
+
+.vs/
+
+
+# Logs
+*.log
+
+# Banco de dados SQLite
+*.db
+*.sqlite
+*.sqlite3
+
+# Configurações locais
+appsettings.Development.json
+appsettings.Local.json
+
+# Certificados de desenvolvimento
+*.pfx
+*.p12
+
+# Arquivos temporários e cache
+*.tmp
+*.temp
+*.cache
+*.ide
+
+# Configurações do Visual Studio
+.vscode/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Diretórios de cache do Visual Studio
+.vs/
+
+# Arquivos gerados pelo Entity Framework
+Migrations/
+
+# Arquivos do sistema operacional
+.DS_Store
+desktop.ini
+Thumbs.db
