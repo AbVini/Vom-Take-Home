@@ -3,6 +3,8 @@ using ConfigBackend.Data;
 using Microsoft.EntityFrameworkCore;
 using SharedModels.Models;
 
+namespace ConfigBackend.Test;
+
 public class PolicyTests
 {
     private AppDbContext GetInMemoryDbContext(string dbName)
@@ -23,15 +25,15 @@ public class PolicyTests
         {
             Name = "Test Policy",
             Conditions = new List<Condition>
+     {
+         new Condition
          {
-             new Condition
-             {
-                 InputVariable = "age",
-                 Operator = ">",
-                 Value = 18,
-                 DecisionValue = null
-             }
+             InputVariable = "age",
+             Operator = ">",
+             Value = 18,
+             DecisionValue = null
          }
+     }
         };
 
         // Act
@@ -53,7 +55,7 @@ public class PolicyTests
         var dbContext = GetInMemoryDbContext("MissingPolicyNameTest");
         var policyDto = new Policy
         {
-            Name = "", 
+            Name = "",
             Conditions = new List<Condition>()
         };
 
