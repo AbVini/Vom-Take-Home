@@ -39,7 +39,6 @@ public static class PolicyServiceExtensions
                     StartConditionId = policy.Conditions.FirstOrDefault(c => c == policy.StartCondition).Id,
                     Conditions = policy.Conditions.Select(c => new ConditionDto
                     {
-                        Id = c.Id,
                         InputVariable = c.InputVariable,
                         Operator = c.Operator,
                         Value = c.Value,
@@ -57,7 +56,7 @@ public static class PolicyServiceExtensions
             }
         });
 
-        app.MapPost("/api/policies", async (PolicyDetailDto policyDto, AppDbContext dbContext) =>
+        app.MapPost("/api/policies", async (PolicyDTO policyDto, AppDbContext dbContext) =>
         {
             var policy = new Policy
             {
@@ -65,42 +64,38 @@ public static class PolicyServiceExtensions
                 Conditions = new List<Condition>()
             };
 
-            var conditionMap = new Dictionary<int, Condition>();
-            foreach (ConditionDto conditionDto in policyDto.Conditions)
+            var conditions = policyDto.Conditions.Select(dto => new Condition
             {
-                var condition = new Condition
-                {
-                    Id = conditionDto.Id, 
-                    InputVariable = conditionDto.InputVariable,
-                    Operator = conditionDto.Operator,
-                    Value = conditionDto.Value,
-                    DecisionValue = conditionDto.DecisionValue,
-                    Policy = policy
-                };
-                conditionMap[conditionDto.Id] = condition;
-                policy.Conditions.Add(condition);
-            }
+                InputVariable = dto.InputVariable,
+                Operator = dto.Operator,
+                Value = dto.Value,
+                DecisionValue = dto.DecisionValue,
+                Policy = policy
+            }).ToList();
 
-            foreach (var conditionDto in policyDto.Conditions)
+            for (int i = 0; i < policyDto.Conditions.Count; i++)
             {
-                if (conditionDto.TrueConditionId.HasValue)
+                var conditionDto = policyDto.Conditions[i];
+                var currentCondition = conditions[i];
+
+                if (conditionDto.TrueConditionIndex.HasValue)
                 {
-                    conditionMap[conditionDto.Id].TrueCondition = conditionMap[conditionDto.TrueConditionId.Value];
+                    currentCondition.TrueCondition = conditions[conditionDto.TrueConditionIndex.Value];
                 }
-                if (conditionDto.FalseConditionId.HasValue)
+
+                if (conditionDto.FalseConditionIndex.HasValue)
                 {
-                    conditionMap[conditionDto.Id].FalseCondition = conditionMap[conditionDto.FalseConditionId.Value];
+                    currentCondition.FalseCondition = conditions[conditionDto.FalseConditionIndex.Value];
                 }
             }
 
-            policy.StartCondition = conditionMap[policyDto.StartConditionId];
+            policy.StartCondition = conditions.FirstOrDefault();
 
-            dbContext.Policies.Add(policy);
+            await dbContext.Policies.AddAsync(policy);
             await dbContext.SaveChangesAsync();
 
             return Results.Ok(policy);
         });
-        
         app.MapPut("/api/policies/{id}", async (int id, Policy updatedPolicy, AppDbContext db) =>
         {
             var policy = await db.Policies.Include(p => p.Conditions).FirstOrDefaultAsync(p => p.Id == id);
